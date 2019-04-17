@@ -142,9 +142,52 @@ todo, odwołanie do tabeli, podpisać je w arkuszu i tu używać tych oznaczeń
 
 todo
 
+Prędkość przetwarzania
 \begin{equation}
-dasdas= d  d da
+\frac{Z}{Tobl} = \frac{2 \cdot n^3}{Tobl}
 \end{equation}
+
+Liczba instrukcji na cykl procesora IPC1 dla procesora
+\begin{equation}
+\frac{LIA}{LCP}
+\end{equation}
+
+Liczba instrukcji na cykl procesora IPCS dla systemu
+\begin{equation}
+\frac{LPF \cdot LIA}{LCP}
+\end{equation}
+
+Wskaźnik braków trafień
+\begin{equation}
+\frac{BTL3}{LIA}
+\end{equation}
+
+Wskaźnik dostępu
+\begin{equation}
+\frac{LDP}{LIA}
+\end{equation}
+
+Wskaźnik braków trafień do głównego bufora translacji adresów danych
+\begin{equation}
+\frac{BTBT}{LIA}
+\end{equation}
+
+Krotność pobierania danych instancji do pamięci podręcznej
+\begin{equation}
+\frac{BTL3 \cdot dlpp}{wtz \cdot 3 \cdot n \cdot n}
+\end{equation}
+
+Miara kosztu synchronizacji
+\begin{equation}
+\frac{CCP - CWP}{CCP} = \frac{LUPF \cdot Tobl - LCP \cdot Tclk}{LUPF \cdot Tobl}
+\end{equation}
+
+Przyspieszenie przetwarzania równoległego
+\begin{equation}
+Sp(równoległe A) = \frac{Tolb(obliczenia sekwencyjne IKJ)}{Tobl(obliczenia równoległe A)}
+\end{equation}
+
+
 \subsection{Obliczenia}
 todo: BINDy np. LIA - Ret inst
 
