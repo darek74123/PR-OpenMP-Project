@@ -1,0 +1,172 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[polish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{pslatex} %z tym czcionka wygląda ładniej
+
+\usepackage{xcolor}
+\definecolor{CodeListingColor}{rgb}{0.95,0.95,0.95}
+\usepackage{minted}
+
+
+\setlength\parindent{0pt} %żeby wcięć przed akapitem nie było
+
+%\author{
+%  Ewa Fengler 132219
+%  \and
+%  Dariusz Grynia 132235
+%  \and
+%  gr. I1, wt. godz. 15.10, tyg. parzyste
+%}
+\date{}
+\title{Przetwarzanie równoległe - \\ Projekt 1 OMP}
+
+\usepackage[a4paper, left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm, headsep=1.2cm]{geometry}
+\usepackage[figurename=Rys.]{caption}
+\usepackage{graphicx}
+\usepackage[space]{grffile}
+\usepackage{float}
+%\usepackage{etoolbox}
+%\makeatletter
+%\patchcmd{\Ginclude@eps}{"#1"}{#1}{}{}
+%\makeatother
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\vspace{1cm}
+\section{Wstęp}
+
+Ewa Fengler 132219
+
+Dariusz Grynia 132235
+
+grupa I1,\\
+wtorki godz. 15.10,\\
+tygodnie parzyste\\
+dariusz.grynia@student.put.poznan.pl\\
+
+
+Mnożenie macierzy - porównanie efektywności metod –
+\begin{itemize}
+
+\item 3 pętle - kolejność pętli: ijk, podział pracy przed pętlą 1
+\item 6 pętli - kolejność pętli: zewnętrznych ijk, wewnętrznych: ii,jj,kk podział pracy przed pętlą 1.
+\end{itemize}
+
+
+\section{Analiza z przygotowania eksperymentu}
+
+
+\subsection{Kod}
+\begin{minted}
+[
+	frame=lines,
+	framesep=2mm,
+	baselinestretch=1.2,
+	tabsize=2,
+	bgcolor=CodeListingColor,
+	%fontsize=\footnotesize,
+	linenos %Enables line numbers
+]{c++}
+void multiply_matrices_IJK(){
+#pragma omp parallel for
+	for (int i = 0; i < SIZE; i++)
+		for (int j = 0; j < SIZE; j++)
+			for (int k = 0; k < SIZE; k++)
+				matrix_r[i][j] += matrix_a[i][k] * matrix_b[k][j];
+}
+
+
+\end{minted}
+
+
+\begin{minted}
+[
+	frame=lines,
+	framesep=2mm, %frame separation
+	baselinestretch=1.2, %Interlining of the code
+	obeytabs=true,
+	tabsize=2, %number of spaces a tab is equivalent to
+	bgcolor=CodeListingColor,
+	%fontsize=\footnotesize,
+	linenos %Enables line numbers
+]{c++}
+
+void multiply_matrices_IJK_IJK(){
+#pragma omp parallel for
+	for (int i = 0; i < SIZE; i += R)
+		for (int j = 0; j < SIZE; j += R)
+			for (int k = 0; k < SIZE; k += R)
+				for (int ii = i; ii < i + R; ii++)
+					for (int jj = j; jj < j + R; jj++)
+						for (int kk = k; kk < k + R; kk++)
+							matrix_r[ii][jj] += matrix_a[ii][kk] * matrix_b[kk][jj];
+}
+
+\end{minted}
+\subsection{Wyścig}
+
+\subsection{Analiza podziału pracy na wątki}
+
+TODO:
+
+za pomocą rysunków określić zadania realizowane przez poszczególne wątki i
+obszary danych wejściowych i wyjściowych przetwarzanych przez jeden wątek
+
+
+\subsection{False sharing}
+
+Najmniejszą jednostką danych pobieranych do pamięci podręcznej jest linia pamięci (zwykle 64B). False sharing jest zjawiskiem występującym wtedy, gdy różne procesory wykonują operację zapisu różnych zmiennych znajdujących się w tej samej linii. Powoduje to unieważnienie kopii linii, znajdujących się w pamięciach podręcznych innych procesorów. Następnie dostęp do tych danych jest dla danego procesora wstrzymywany do momentu sprowadzenia aktualnej wersji linii pamięci. Mechanizm ten ma na celu zapewnienie spójności pamięci podręcznej. Częste występowanie takich sytuacji powoduje znaczący spadek efektywności przetwarzania.\\
+\\
+W analizowanych w zadaniu metodach procesory podział pracy następuje przed pierwszą pętlą. Dzięki temu poszczególne procesory zapisują do rozłącznych, oddalonych od siebie obszarów pamięci. Jedynym miejscem, gdzie procesory mogłyby zapisywać dane do tej samej linii pamięci są obszary w pobliżu granicy podziału macierzy wynikowej. Jest to niewielki procent danych w porównaniu do rozmiaru całej wykorzystywanej macierzy. Ponadto, przetwarzanie na poszczególnych procesorach odbywa się w przybliżeniu w równym tempie, a więc nie wystąpi sytuacja, w której różne procesory będą naprzemiennie, wielokrotnie zapisywać do tej linii pamięci, ponieważ znajduje się ona na początku obszaru pracy jednego procesora i na końcu innego. Dane z macierzy źródłowych mogą być współdzielone przez procesory, nie stanowi to oczywiście problemu, ponieważ są to dane wyłącznie odczytywane. Można zatem stwierdzić, że problem false sharingu nie występuje w przypadku analizowanych algorytmów.
+
+\subsection{Analiza lokalności czasowej}
+
+\subsection{Analiza lokalności przestrzennej}
+
+\section{Eksperyment pomiarowy}
+
+\subsection{Instancje}
+
+TODO tabelka n,r, wybrane instancje, oba kody
+
+\subsection{Mierzone parametry}
+
+\subsection{Wyniki eksperymentu}
+
+todo, odwołanie do tabeli, podpisać je w arkuszu i tu używać tych oznaczeń
+
+\subsection{Wzory}
+
+todo
+
+\begin{equation}
+dasdas= d  d da
+\end{equation}
+\subsection{Obliczenia}
+todo: BINDy np. LIA - Ret inst
+
+przygotować szblony wykresów, na razie nie  wiem dla których dokładnie danych 
+
+
+%\begin{figure}[H]
+%  \centering
+%    \includegraphics[width=0.60\textwidth]{img}
+%    \caption{jklfjgskl fdsfsd}
+%\end{figure}
+
+
+
+
+
+
+
+\section{Wnioski}
+
+
+
+
+
+\end{document}
