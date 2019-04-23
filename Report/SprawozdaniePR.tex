@@ -121,12 +121,12 @@ void multiply_matrices_IJK_IJK(){
 \subsection{Analiza podziału pracy na wątki}
 
 
-\subsubsection{3 pętle - kolejność pętli: ijk, podział pracy przed pętlą 1}
+\subsubsection{Metoda 3 pętlowa, kolejność pętli IJK, podział pracy przed pierwszą pętlą}
 
 \begin{figure}[H]
   \centering
     \includegraphics[width=0.60\textwidth]{IJK_K.jpg}
-    \caption{TODO}
+    \caption{obszar danych wykorzystywanych w wewnętrznej pętli}
 \end{figure}
 
 W jednej iteracji pętli wewnętrznej pojedynczy wątek przechodzi raz wiersz macierzy A, raz kolumnę macierzy B i zapisuje wartość do jednego pola macierzy wynikowej C.
@@ -134,7 +134,7 @@ W jednej iteracji pętli wewnętrznej pojedynczy wątek przechodzi raz wiersz ma
 \begin{figure}[H]
   \centering
     \includegraphics[width=0.60\textwidth]{IJK_KJ.jpg}
-    \caption{TODO}
+    \caption{obszar danych wykorzystywanych w dwóch wewnętrznych pętlach}
 \end{figure}
 
 Wykonując dwie pętle wewnętrzne, pojedynczy wątek przechodzi wielokrotnie wiersz macierzy A, przechodzi raz każdą kolumnę macierzy B i przechodzi wiersz macierzy C jeden raz.
@@ -142,13 +142,60 @@ Wykonując dwie pętle wewnętrzne, pojedynczy wątek przechodzi wielokrotnie wi
 \begin{figure}[H]
   \centering
     \includegraphics[width=0.60\textwidth]{IJK_KJI.jpg}
-    \caption{TODO}
+    \caption{podział pracy na wątki}
 \end{figure}
 
-podział pracy następuje przez najbardziej zewnętrzną pętlą. Każdy wątek przechodzi osobne wiersze macierzy A i C oraz całą macierz B.
+podział pracy następuje przed najbardziej zewnętrzną pętlą. Każdy wątek przechodzi osobne wiersze macierzy A i C oraz całą macierz B.
 
-\subsubsection{6 pętli - kolejność pętli: zewnętrznych ijk, wewnętrznych: ii,jj,kk podział pracy przed pętlą 1}
-TODO
+\subsubsection{Metoda 6 pętlowa, kolejność pętli IJK-IJK, podział pracy przed pierwszą pętlą}
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.60\textwidth]{IJKIJK_KK.jpg}
+    \caption{obszar danych wykorzystywanych w wewnętrznej pętli}
+\end{figure}
+
+W jednej iteracji pętli wewnętrznej pojedynczy wątek przechodzi raz fragment wiersza długości r macierzy A, raz fragment kolumny długości r macierzy B i zapisuje wartość do jednego pola macierzy C.
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.60\textwidth]{IJKIJK_KKJJ.jpg}
+    \caption{obszar danych wykorzystywanych w dwóch wewnętrznych pętlach}
+\end{figure}
+
+Wykonując dwie pętle wewnętrzne, pojedynczy wątek przechodzi wielokrotnie fragment wiersza długości r macierzy A, przechodzi raz każdą kolumnę fragmentu macierzy B o rozmiarze r x r i przechodzi jednokrotnie fragment wiersza długości r macierzy wynikowej C.
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.60\textwidth]{IJKIJK_KKJJII.jpg}
+    \caption{obszar danych wykorzystywanych w trzech wewnętrznych pętlach}
+\end{figure}
+
+Wykonując trzy pętle wewnętrzne, pojedynczy wątek przechodzi wielokrotnie każdy wiersz fragmentu macierzy A rozmiaru r x r, przechodzi wielokrotnie każdą kolumnę fragmentu maacierzy B rozmiaru r x r i jednokrotnie zapisuje każdy wiersz fragmentu macierzy C rozmiaru r x r.
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.60\textwidth]{IJKIJK_KKJJIIK.jpg}
+    \caption{obszar danych wykorzystywanych w czterech wewnętrznych pętlach}
+\end{figure}
+
+Wykonując cztery pętle wewnętrzne, pojedynczy wątek wykorzystuje r wierszy macierzy A, r kolumn macierzy B oraz wypełnia fragment macierzy C o rozmiarze r x r.
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.60\textwidth]{IJKIJK_KKJJIIKJ.jpg}
+    \caption{obszar danych wykorzystywanych we wszystkich wewnętrznych pętlach}
+\end{figure}
+
+Wykonując wszystkie pętle wewnętrzne, pojedynczy wątek wykorzystuje r wierszy macierzy A, całą macierz B oraz wypełnia r wierszy macierzy C.
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.60\textwidth]{IJK_KJI.jpg}
+    \caption{podział pracy na wątki}
+\end{figure}
+
+Podział pracy na wątki jest taki sam jak w przypadku metody 3 pętlowej -  następuje przed najbardziej zewnętrzną pętlą, każdy wątek przechodzi osobne wiersze macierzy A i C, macierz B jest wykorzystywana w całości przez wszystkie wątki.
 
 
 \subsection{False sharing}
@@ -295,7 +342,7 @@ Miara kosztu synchronizacji
 
 Przyspieszenie przetwarzania równoległego
 \begin{equation}
-Sp(równoległe A) = \frac{Tolb(obliczenia sekwencyjne IKJ)}{Tobl(obliczenia równoległe A)}
+Sp(równoległe A) = \frac{Tolb(obliczenia \; sekwencyjne IKJ)}{Tobl(obliczenia równoległe A)}
 \end{equation}
 
 
