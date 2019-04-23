@@ -8,6 +8,10 @@
 \definecolor{CodeListingColor}{rgb}{0.95,0.95,0.95}
 \usepackage{minted}
 
+\usepackage{mathtools}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
 
 \setlength\parindent{0pt} %żeby wcięć przed akapitem nie było
 
@@ -120,11 +124,66 @@ obszary danych wejściowych i wyjściowych przetwarzanych przez jeden wątek
 
 Najmniejszą jednostką danych pobieranych do pamięci podręcznej jest linia pamięci (zwykle 64B). False sharing jest zjawiskiem występującym wtedy, gdy różne procesory wykonują operację zapisu różnych zmiennych znajdujących się w tej samej linii. Powoduje to unieważnienie kopii linii, znajdujących się w pamięciach podręcznych innych procesorów. Następnie dostęp do tych danych jest dla danego procesora wstrzymywany do momentu sprowadzenia aktualnej wersji linii pamięci. Mechanizm ten ma na celu zapewnienie spójności pamięci podręcznej. Częste występowanie takich sytuacji powoduje znaczący spadek efektywności przetwarzania.\\
 \\
-W analizowanych w zadaniu metodach procesory podział pracy następuje przed pierwszą pętlą. Dzięki temu poszczególne procesory zapisują do rozłącznych, oddalonych od siebie obszarów pamięci. Jedynym miejscem, gdzie procesory mogłyby zapisywać dane do tej samej linii pamięci są obszary w pobliżu granicy podziału macierzy wynikowej. Jest to niewielki procent danych w porównaniu do rozmiaru całej wykorzystywanej macierzy. Ponadto, przetwarzanie na poszczególnych procesorach odbywa się w przybliżeniu w równym tempie, a więc nie wystąpi sytuacja, w której różne procesory będą naprzemiennie, wielokrotnie zapisywać do tej linii pamięci, ponieważ znajduje się ona na początku obszaru pracy jednego procesora i na końcu innego. Dane z macierzy źródłowych mogą być współdzielone przez procesory, nie stanowi to oczywiście problemu, ponieważ są to dane wyłącznie odczytywane. Można zatem stwierdzić, że problem false sharingu nie występuje w przypadku analizowanych algorytmów.
+W analizowanych w zadaniu metodach podział pracy następuje przed pierwszą pętlą. Dzięki temu poszczególne procesory zapisują do rozłącznych, oddalonych od siebie obszarów pamięci. Jedynym miejscem, gdzie procesory mogłyby zapisywać dane do tej samej linii pamięci, są obszary w pobliżu granicy podziału macierzy wynikowej. Jest to niewielki procent danych, w porównaniu do rozmiaru całej wykorzystywanej macierzy. Ponadto, przetwarzanie na poszczególnych procesorach odbywa się w przybliżeniu w równym tempie, a więc nie wystąpi sytuacja, w której różne procesory będą naprzemiennie, wielokrotnie zapisywać do tej samej linii pamięci, ponieważ znajduje się ona na początku obszaru pracy jednego procesora i na końcu innego. Dane z macierzy źródłowych mogą być współdzielone przez procesory, nie stanowi to oczywiście problemu, ponieważ są to dane wyłącznie odczytywane. Można zatem stwierdzić, że problem false sharingu nie występuje w przypadku analizowanych algorytmów.
 
 \subsection{Analiza lokalności czasowej}
 
+Na prędkość przetwarzania, oprócz wydajności jednostek wykonujących operacje na danych (ALU, FPU), duży wpływ ma także czas dostępu do danych. Dostęp do danych, znajdujących się w pamięci operacyjnej, zajmuje stosunkowo dużo czasu, w porównaniu do tego, jak szybko procesor może wykonywać obliczenia. Spadek efektywności przetwarzania jest szczególnie zauważalny w przypadku, gdy kod cechuje się wysokim wskaźnikiem dostępu do danych. Rozwiązaniem problemu znacznych opóźnień do danych znajdujących się w RAM jest stosowanie w procesorach pamięci podręcznej, cechującej się znacznie lepszą przepustowością oraz mniejszymi opóźnieniami dostępu. Pamięć podręczna ma jednak bardzo ograniczoną pojemność, dlatego dla zapewnienia wysokiej efektywności przetwarzania ważne jest, aby kod charakteryzował czasową lokalnością odwołań do pamięci, tzn. aby dane raz sprowadzone do pamięci podręcznej były wielokrotnie wykorzystywane, zanim zostaną z niej usunięte.\\
+\\
+W trakcie analizy lokalności czasowej dostępu do danych metod wykorzystywanych w zadaniu przyjęto rozmiar pamięci podręcznej równy 6MB. Jest on równy pojemności współdzielonej pamięci L3. Pamięć L2 nie została wliczona, ponieważ niektóre dane mogą znajdować się zarówno w niej, jak i w pamięci trzeciego poziomu. Z kolei pojemność pamięci L1 jest tak mała, że nie miałaby znaczącego wpływu przy obliczaniu rozmiarów instancji. Ponadto należy pamiętać, że w systemie działają także inne procesy, w tym narzędzie do analizy wydajności AMD CodeXL, dlatego należy uwzględnić pewien zapas przy wyznaczaniu rozmiarów instancji.\\
+\\
+W przypadku kodu (TODO odnośnik do IJK) w trakcie przetwarzania dane z macierzy B są wykorzystywane N razy. Konieczne jest zatem zmieszczenie całej macierzy B (o rozmiarze $n^2$) w pamięci podręcznej. Macierz ta może być współdzielona przez procesory.
+Podział pracy przed pierwszą pętlą powoduje, że każdy procesor, w trakcie jednego przebiegu tej pętli, wielokrotnie wykorzystuje pojedynczy wiersz macierzy A, później nie odwołuje się ponownie do tych danych. Oznacza to, że w pamięci podręcznej muszą zmieścić się także 4 wiersze (każdy o rozmiarze $n$) macierzy A.
+Konieczne jest również zmieszczenie 4 słów macierzy wynikowej (po jednym dla każdego procesora), jednak należy uwzględnić, że najmniejszą jednostką danych sprowadzanych do pamięci podręcznej jest linia (64B czyli 16 zmiennych typu float).\\
+\\
+Ostatecznie rozmiar instancji, dla której będzie zachowana lokalność czasowa dostępu do danych, można policzyć ze wzoru:
+\begin{equation}
+n^2 + 4\cdot n + 4 \cdot 16 < 6 \text{ MB}
+\end{equation}
+
+Uwzględniając pewien zapas daje to instancję o rozmiarze $n=1200$.\\
+\\
+
+W wersji 6 pętlowej algorytmu mnożenia macierzy (TODO odnośnik do listingu IJK IJK) mamy do czynienia z podzieleniem całego zadania na etapy.Dzięki temu w danym czasie wielokrotnie korzystamy z mniejszej ilości danych (z każdej macierzy wykorzystujemy blok o wielkości $r \cdot r$ elementów). Umożliwia to zachowanie częściowej lokalności czasowej dostępu do danych (poszczególne bloki mogą być pobierane do pamięci podręcznej $n / r$ razy) dla większych instancji, dla których w przypadku poprzedniej metody konieczne byłoby pobieranie danych aż $n$ razy. Wartość $r$ musi być tak dobrana, aby iloraz $n/r$ był liczbą całkowitą. Ponieważ podział pracy następuje przed pierwszą pętlą, iloraz ten będzie również liczbą zadań do podziału między rdzeniami. Powinien być zatem liczbą podzielną przez 4 (liczba wykorzystywanych procesorów fizycznych) w celu zapewnienia zrównoważenia pracy systemu.\\
+\\
+Wielkość instancji zapewniającej częściową lokalność czasową można teoretycznie policzyć korzystając ze wzoru (TODO odnośnik do wzoru powyżej), zamiast $n$ podstawiając $r$. Wartość ta będzie poprawna przy założeniu, że rdzenie pracują z równą szybkością i w danych czasie mogą współdzielić ten sam wykorzystywany blok macierzy b. Jest to jednak założenie dość ryzykowne, więc do obliczenia przyjęto inny wzór: 
+\begin{equation}
+12r^2 < 6 \text{ MB}
+\end{equation}
+
+Taki rozmiar powinien zapewnić, że dla każdego rdzenia możliwe jest przechowywanie w pamięci podręcznej wykorzystywanych przez niego aktualnie fragmentów (bloków r*r) wszystkich trzech macierzy. Daje to instancję testową o parametrach $n=1400$, $r=350$. Instancja ta zostanie również wykorzystana do testu metody 3 pętlowej, gdzie należy oczekiwać braku lokalności czasowej dostępu do danych, ponieważ wymagana pamięć podręczna musiałaby mieć pojemność ok. 7,5 MB.
+
+
 \subsection{Analiza lokalności przestrzennej}
+
+Współcześnie większość systemów korzysta z mechanizmu zarządzania pamięcią zwanego pamięcią wirtualną. Jedną z zalet takiej organizacji jest możliwość przydzielenia procesom działającym w systemie łącznie więcej pamięci niż rozmiar dostępnej fizycznej pamięci operacyjnej. Dane, które nie mieszczą się w pamięci operacyjnej i nie są aktualnie wykorzystywane są przechowywane w pliku wymiany na dysku twardym. Taka organizacja pamięci powoduje, że nie można już stosować adresów fizycznych, mających odwzorowanie bezpośrednio w pamięci RAM. Powszechnie stosowanym mechanizmem jest podział pamięci wirtualnej na strony (zwykle o rozmiarze 4 kB), stanowiące ciągły obszar pamięci. Pamięć RAM jest podzielona na ramki o rozmiarze odpowiadającym wielkości stron. Dana strona może aktualnie znajdować się w pamięci lub w pliku wymiany. Procesor posługuje się adresami logicznymi(wirtualnymi). W celu realizacji dostępu do danych, konieczna jest translacja adresu logicznego na aktualny adres fizyczny. Informacje umożliwiające określenie adresu ramki pamięci dla danej strony pamięci znajdują się w tablicy stron pamięci. Przeglądanie tablicy stron przy każdym dostępie do pamięci byłoby bardzo kosztowne i znacząco zmniejszałoby efektywność przetwarzania. Dlatego tutaj również stosuje się pewien rodzaj pamięci podręcznej - bufor translacji adresu (TLB). Posiada on stałą liczbę par adresów stron i odpowiadających im ramek i pozwala na szybkie odwzorowanie (zwykle w jednym cyklu zegarowym) adresu wirtualnego na adres fizyczny.\\
+\\
+Procesor wykorzystywany w zadaniu posiada bufor TLB o pojemności 544 par adresów (na każdy rdzeń). Strona pamięci wirtualnej ma rozmiar 4 kB (czyli mieści 1024 zmienne typu float).\\
+\\
+W celu zapewnianie efektywnego dostępu do adresów w buforze translacji w wersji 3 pętlowa algorytmu mnożenia macierzy musi on zmieścić:
+\begin{itemize}
+\item adresy wszystkich stron zawierających macierz B,
+\item adresy stron zawierających jeden wiersz macierzy A,
+\item adres strony zawierającej jedną komórkę macierzy C
+\end{itemize}
+
+Rozmiar instancji można wyznaczyć posługując się wzorem (uwzględniono możliwość, że macierze nie będą wyrównane do początku strony, dlatego do pierwszego i drugiego wyrazu dodano 1):
+\begin{equation}
+\ceil*{\frac{n^2}{1024}} + 1 + \ceil*{\frac{n}{1024}} + 1 + 1 < 544
+\end{equation}
+
+Dodatkowo przyjmując pewien zapas dla innych procesów działających w systemie, daje to instancję o rozmiarze $n=700$, w przypadku której dane mogą być rozmieszczone na maksymalnie 483 stronach.\\
+\\
+W przypadku wersji 6 pętlowej określenie odpowiednich wartości n oraz r jest trudniejsze. Jeden blok o wielkości r*r może znajdować się na r stronach (np. przy n=1024, r=256 i odpowiednim wyrównaniu danych). W przypadku braku wyrównania, może to być już 2r stron lub więcej dla bardzo dużych instancji.\\
+\\
+Eksperyment zostanie zatem przeprowadzony dla instancji:
+\begin{enumerate}
+\item n=1400, r=350
+\item n=1400, r=175
+\end{enumerate}
+
+Obie instancje zapewniają równomierne rozłożenie pracy na wątki. Pierwsza instancja nie zapewni lokalnego przestrzennie dostępu do danych, ponieważ rozmiar macierzy będzie powodował takie ułożenie danych na stronach, że przynajmniej niektóre bloki będą wymagały 2r stron (czyli 700), co przy wielokrotnym wykorzystywaniu fragmentu macierzy B będzie skutkowało wielokrotnym zastępowaniem wpisów w TLB i koniecznością ponownego uzupełniania tych informacji. Druga instancja nawet przy pesymistycznym założeniu dotyczącym rozmieszczenia danych na stronach zapewni lokalność przestrzenną (adresy 350 stron dla fragmentu macierzy B oraz pojedynczych stron dla fragmentów macierzy A oraz C zmieszczą się w buforze).
+
 
 \section{Eksperyment pomiarowy}
 
