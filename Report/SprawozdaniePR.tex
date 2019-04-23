@@ -114,10 +114,35 @@ void multiply_matrices_IJK_IJK(){
 
 \subsection{Analiza podziału pracy na wątki}
 
-TODO:
 
-za pomocą rysunków określić zadania realizowane przez poszczególne wątki i
-obszary danych wejściowych i wyjściowych przetwarzanych przez jeden wątek
+\subsubsection{3 pętle - kolejność pętli: ijk, podział pracy przed pętlą 1}
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.60\textwidth]{IJK_K.jpg}
+    \caption{TODO}
+\end{figure}
+
+W jednej iteracji pętli wewnętrznej pojedynczy wątek przechodzi raz wiersz macierzy A, raz kolumnę macierzy B i zapisuje wartość do jednego pola macierzy wynikowej C.
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.60\textwidth]{IJK_KJ.jpg}
+    \caption{TODO}
+\end{figure}
+
+Wykonując dwie pętle wewnętrzne, pojedynczy wątek przechodzi wielokrotnie wiersz macierzy A, przechodzi raz każdą kolumnę macierzy B i przechodzi wiersz macierzy C jeden raz.
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.60\textwidth]{IJK_KJI.jpg}
+    \caption{TODO}
+\end{figure}
+
+podział pracy następuje przez najbardziej zewnętrzną pętlą. Każdy wątek przechodzi osobne wiersze macierzy A i C oraz całą macierz B.
+
+\subsubsection{6 pętli - kolejność pętli: zewnętrznych ijk, wewnętrznych: ii,jj,kk podział pracy przed pętlą 1}
+TODO
 
 
 \subsection{False sharing}
