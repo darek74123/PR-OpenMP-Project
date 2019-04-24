@@ -12,6 +12,7 @@
 \DeclarePairedDelimiter\ceil{\lceil}{\rceil}
 \DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
 
+\usepackage{amsfonts}
 
 \setlength\parindent{0pt} %żeby wcięć przed akapitem nie było
 
@@ -330,51 +331,61 @@ todo, odwołanie do tabeli, podpisać je w arkuszu i tu używać tych oznaczeń
 
 \subsection{Wzory}
 
-{\huge TODO przedziały wartości}
-
 Prędkość przetwarzania
 \begin{equation}
-\frac{Z}{Tobl} = \frac{2 \cdot n^3}{Tobl}
+\frac{Z}{Tobl} = \frac{2 \cdot n^3}{Tobl} \; \in \; \mathbb{R}_+
 \end{equation}
 
 Liczba instrukcji na cykl procesora IPC1 dla procesora
 \begin{equation}
-\frac{LIA}{LCP}
+\frac{LIA}{LCP} \; \in \; \mathbb{R}_+
 \end{equation}
 
 Liczba instrukcji na cykl procesora IPCS dla systemu
 \begin{equation}
 \frac{LPF \cdot LIA}{LCP}
+\; \in \; \mathbb{R}_+
 \end{equation}
 
 Wskaźnik braków trafień
 \begin{equation}
 \frac{BTL3}{LIA}
+\; \in \; \langle 0,1 \rangle
 \end{equation}
 
-Wskaźnik dostępu
+Wskaźnik dostępu do danych
 \begin{equation}
 \frac{LDP}{LIA}
+\; \in \; \langle 0,1 \rangle
 \end{equation}
 
 Wskaźnik braków trafień do głównego bufora translacji adresów danych
 \begin{equation}
 \frac{BTBT}{LIA}
+\; \in \; \langle 0,1 \rangle
 \end{equation}
 
 Krotność pobierania danych instancji do pamięci podręcznej
 \begin{equation}
 \frac{BTL3 \cdot dlpp}{wtz \cdot 3 \cdot n \cdot n}
+\; \in \; \langle 1,16n \rangle
 \end{equation}
+\begin{footnotesize}
+\begin{center}
+W najlepszym przypadku każda linia pamięci zostanie pobrana dokładnie raz, stąd 1, natomiast w najgorszym przypadku w każdej iteracji algorytmu 3 pętlowego ($n^3$) wystąpi brak trafienia do wszystkich trzech macierzy, stąd $\frac{3n^3 \cdot 64B}{4B \cdot 3n^2} = 16n$
+\end{center}
+\end{footnotesize}
 
 Miara kosztu synchronizacji
 \begin{equation}
 \frac{CCP - CWP}{CCP} = \frac{LUPF \cdot Tobl - LCP \cdot Tclk}{LUPF \cdot Tobl}
+\; \in \; \langle 0,1 \rangle
 \end{equation}
 
 Przyspieszenie przetwarzania równoległego  %TODO - co z polskimi literami?
 \begin{equation}
 Sp(równoległe\; A) = \frac{Tobl(obliczenia\; sekwencyjne\; IKJ)}{Tobl(obliczenia\; równoległe\; A)}
+\; \in \; \mathbb{R}_+
 \end{equation}
 
 
