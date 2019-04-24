@@ -13,6 +13,7 @@
 \DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
 
 \usepackage{amsfonts}
+\usepackage{csvsimple}
 
 \setlength\parindent{0pt} %żeby wcięć przed akapitem nie było
 
@@ -392,20 +393,38 @@ Sp(równoległe\; A) = \frac{Tobl(obliczenia\; sekwencyjne\; IKJ)}{Tobl(obliczen
 \subsection{Obliczenia}
 todo: BINDy np. LIA - Ret inst
 
-przygotować szblony wykresów, na razie nie  wiem dla których dokładnie danych 
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.60\textwidth]{../Results/charts/GFLOPS.png}
+    \caption{Wykres porównujący prędkość przetwarzania}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.60\textwidth]{../Results/charts/krotnosc.png}
+    \caption{Wykres porównujący krotność pobierania danych instancji do pamięci podręcznej}
+\end{figure}
 
 
-%\begin{figure}[H]
-%  \centering
-%    \includegraphics[width=0.60\textwidth]{img}
-%    \caption{jklfjgskl fdsfsd}
-%\end{figure}
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.60\textwidth]{../Results/charts/L3_miss.png}
+    \caption{Wykres porównujący wskaźnik braków trafień do pamięci podręcznej L3}
+\end{figure}
 
 
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.60\textwidth]{../Results/charts/ppr.png}
+    \caption{Wykres porównujący przyspieszenie przetwarzania równoległego}
+\end{figure}
 
 
-
-
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.60\textwidth]{../Results/charts/TLB_miss.png}
+    \caption{Wykres porównujący wskaźnik braków trafień do bufora translacji}
+\end{figure}
 
 \section{Wnioski}
 {\huge TODO uwaga zmiana wzoru na wskaźniki TLB-miss-rate}\\
