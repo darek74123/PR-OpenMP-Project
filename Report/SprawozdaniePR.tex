@@ -15,6 +15,9 @@
 \usepackage{amsfonts}
 \usepackage{csvsimple}
 
+\usepackage{adjustbox}
+\usepackage{enumitem}
+
 \setlength\parindent{0pt} %żeby wcięć przed akapitem nie było
 
 %\author{
@@ -25,7 +28,7 @@
 %  gr. I1, wt. godz. 15.10, tyg. parzyste
 %}
 \date{}
-\title{Przetwarzanie równoległe - \\ Projekt 1 OMP}
+\title{Przetwarzanie równoległe \\ \Large Projekt 1 OpenMP}
 
 \usepackage[a4paper, left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm, headsep=1.2cm]{geometry}
 \usepackage[figurename=Rys.]{caption}
@@ -37,6 +40,8 @@
 %\patchcmd{\Ginclude@eps}{"#1"}{#1}{}{}
 %\makeatother
 
+\linespread{1.1}
+
 \begin{document}
 \maketitle
 \thispagestyle{empty}
@@ -44,6 +49,7 @@
 \vspace{1cm}
 \section{Wstęp}
 
+\subsection{Autorzy}
 Ewa Fengler 132219
 
 Dariusz Grynia 132235
@@ -51,10 +57,12 @@ Dariusz Grynia 132235
 grupa I1,\\
 wtorki godz. 15.10,\\
 tygodnie parzyste\\
+
+\subsection{Adres kontaktowy}
 dariusz.grynia@student.put.poznan.pl\\
 
-
-Mnożenie macierzy - porównanie efektywności metod –
+\subsection{Temat zadania}
+Mnożenie macierzy -- porównanie efektywności metod --
 \begin{itemize}
 
 \item 3 pętle - kolejność pętli: ijk, podział pracy przed pętlą 1
@@ -120,14 +128,26 @@ void multiply_matrices_IJK_IJK(){
 
 \subsection{Wyścig}
 
+Wyścig w dostępie do danych jest zjawiskiem, które może występować, gdy równolegle działające procesory dokonują modyfikacji tej samej zmiennej. Wynik działania algorytmu jest wtedy niedeterministyczny, a zatem algorytm, w którym wyścig może wystąpić jest niepoprawny.\\
+\\
+Obydwie analizowane w zadaniu metody współdzielą macierz wynikową C, jednak kolejność pętli oraz miejsce podziału pracy powodują, że obszary wykorzystywane przez poszczególne rdzenie procesora są rozłączne. Dane ze współdzielonych macierzy A oraz B są wyłącznie odczytywane. Nie ma zatem możliwości wystąpienia wyścigu w dostępnie do danych, żadne dodatkowe modyfikacje kodu nie są wymagane.
+
 \subsection{Analiza podziału pracy na wątki}
 
+\subsubsection{Znaczenie dyrektyw Open MP}
+
+W obu wersjach kodu przed pierwszą pętlą do podziału pracy na wątki została użyta dyrektywa
+\texttt{pragma omp parallel for}. W efekcie każda iteracja pętli zostaje wykonana raz,
+równolegle z innymi iteracjami realizowanymi przez pozostałe wątki. Każdemu wątkowi zostaje
+przydzielony jednakowy podzakres iteracji. W przypadku 4 wątków, pierwszy wątek wykona pierwszą
+$1/4$ iteracji, drugi następną, itd. Na końcu pętli for następuje wbudowana synchronizacja,
+dzięki której wiemy, że w momencie pomiaru czasu wszystkie wątki wykonały swoje obliczenia na macierzy wynikowej.
 
 \subsubsection{Metoda 3 pętlowa, kolejność pętli IJK, podział pracy przed pierwszą pętlą}
 
 \begin{figure}[H]
   \centering
-    \includegraphics[width=0.60\textwidth]{IJK_K.jpg}
+    \includegraphics[width=0.95\textwidth]{IJK_K.jpg}
     \caption{obszar danych wykorzystywanych w wewnętrznej pętli}
 \end{figure}
 
@@ -135,7 +155,7 @@ W jednej iteracji pętli wewnętrznej pojedynczy wątek przechodzi raz wiersz ma
 
 \begin{figure}[H]
   \centering
-    \includegraphics[width=0.60\textwidth]{IJK_KJ.jpg}
+    \includegraphics[width=0.95\textwidth]{IJK_KJ.jpg}
     \caption{obszar danych wykorzystywanych w dwóch wewnętrznych pętlach}
 \end{figure}
 
@@ -143,17 +163,17 @@ Wykonując dwie pętle wewnętrzne, pojedynczy wątek przechodzi wielokrotnie wi
 
 \begin{figure}[H]
   \centering
-    \includegraphics[width=0.60\textwidth]{IJK_KJI.jpg}
+    \includegraphics[width=0.95\textwidth]{IJK_KJI.jpg}
     \caption{podział pracy na wątki}
 \end{figure}
 
-podział pracy następuje przed najbardziej zewnętrzną pętlą. Każdy wątek przechodzi osobne wiersze macierzy A i C oraz całą macierz B.
+Podział pracy następuje przed najbardziej zewnętrzną pętlą. Każdy wątek przechodzi osobne wiersze macierzy A i C oraz całą macierz B.
 
 \subsubsection{Metoda 6 pętlowa, kolejność pętli IJK-IJK, podział pracy przed pierwszą pętlą}
 
 \begin{figure}[H]
   \centering
-    \includegraphics[width=0.60\textwidth]{IJKIJK_KK.jpg}
+    \includegraphics[width=0.95\textwidth]{IJKIJK_KK.jpg}
     \caption{obszar danych wykorzystywanych w wewnętrznej pętli}
 \end{figure}
 
@@ -161,7 +181,7 @@ W jednej iteracji pętli wewnętrznej pojedynczy wątek przechodzi raz fragment 
 
 \begin{figure}[H]
   \centering
-    \includegraphics[width=0.60\textwidth]{IJKIJK_KKJJ.jpg}
+    \includegraphics[width=0.95\textwidth]{IJKIJK_KKJJ.jpg}
     \caption{obszar danych wykorzystywanych w dwóch wewnętrznych pętlach}
 \end{figure}
 
@@ -169,7 +189,7 @@ Wykonując dwie pętle wewnętrzne, pojedynczy wątek przechodzi wielokrotnie fr
 
 \begin{figure}[H]
   \centering
-    \includegraphics[width=0.60\textwidth]{IJKIJK_KKJJII.jpg}
+    \includegraphics[width=0.95\textwidth]{IJKIJK_KKJJII.jpg}
     \caption{obszar danych wykorzystywanych w trzech wewnętrznych pętlach}
 \end{figure}
 
@@ -177,7 +197,7 @@ Wykonując trzy pętle wewnętrzne, pojedynczy wątek przechodzi wielokrotnie ka
 
 \begin{figure}[H]
   \centering
-    \includegraphics[width=0.60\textwidth]{IJKIJK_KKJJIIK.jpg}
+    \includegraphics[width=0.95\textwidth]{IJKIJK_KKJJIIK.jpg}
     \caption{obszar danych wykorzystywanych w czterech wewnętrznych pętlach}
 \end{figure}
 
@@ -185,7 +205,7 @@ Wykonując cztery pętle wewnętrzne, pojedynczy wątek wykorzystuje r wierszy m
 
 \begin{figure}[H]
   \centering
-    \includegraphics[width=0.60\textwidth]{IJKIJK_KKJJIIKJ.jpg}
+    \includegraphics[width=0.95\textwidth]{IJKIJK_KKJJIIKJ.jpg}
     \caption{obszar danych wykorzystywanych we wszystkich wewnętrznych pętlach}
 \end{figure}
 
@@ -193,7 +213,7 @@ Wykonując wszystkie pętle wewnętrzne, pojedynczy wątek wykorzystuje r wiersz
 
 \begin{figure}[H]
   \centering
-    \includegraphics[width=0.60\textwidth]{IJK_KJI.jpg}
+    \includegraphics[width=0.95\textwidth]{IJK_KJI.jpg}
     \caption{podział pracy na wątki}
 \end{figure}
 
@@ -212,13 +232,13 @@ Na prędkość przetwarzania, oprócz wydajności jednostek wykonujących operac
 \\
 W trakcie analizy lokalności czasowej dostępu do danych metod wykorzystywanych w zadaniu przyjęto rozmiar pamięci podręcznej równy 6MB. Jest on równy pojemności współdzielonej pamięci L3. Pamięć L2 nie została wliczona, ponieważ niektóre dane mogą znajdować się zarówno w niej, jak i w pamięci trzeciego poziomu. Z kolei pojemność pamięci L1 jest tak mała, że nie miałaby znaczącego wpływu przy obliczaniu rozmiarów instancji. Ponadto należy pamiętać, że w systemie działają także inne procesy, w tym narzędzie do analizy wydajności AMD CodeXL, dlatego należy uwzględnić pewien zapas przy wyznaczaniu rozmiarów instancji.\\
 \\
-W przypadku metody 3 pętlowej (Listing \ref{lst:ijk}) w trakcie przetwarzania dane z macierzy B są wykorzystywane N razy. Konieczne jest zatem zmieszczenie całej macierzy B (o rozmiarze $n^2$) w pamięci podręcznej. Macierz ta może być współdzielona przez procesory.
-Podział pracy przed pierwszą pętlą powoduje, że każdy procesor, w trakcie jednego przebiegu tej pętli, wielokrotnie wykorzystuje pojedynczy wiersz macierzy A, później nie odwołuje się ponownie do tych danych. Oznacza to, że w pamięci podręcznej muszą zmieścić się także 4 wiersze (każdy o rozmiarze $n$) macierzy A.
-Konieczne jest również zmieszczenie 4 słów macierzy wynikowej (po jednym dla każdego procesora), jednak należy uwzględnić, że najmniejszą jednostką danych sprowadzanych do pamięci podręcznej jest linia (64B czyli 16 zmiennych typu float).\\
+W przypadku metody 3 pętlowej (Listing \ref{lst:ijk}) w trakcie przetwarzania dane z macierzy B są wykorzystywane n razy. Konieczne jest zatem zmieszczenie całej macierzy B (o rozmiarze $n^2$) w pamięci podręcznej. Macierz ta może być współdzielona przez procesory.
+Podział pracy przed pierwszą pętlą powoduje, że każdy procesor, w trakcie jednego przebiegu tej pętli, wielokrotnie wykorzystuje pojedynczy wiersz macierzy A, później nie odwołuje się ponownie do tych danych. Oznacza to, że w pamięci podręcznej muszą zmieścić się także 4 wiersze (każdy o rozmiarze $n$, po jednym dla każdego procesora) macierzy A.
+Konieczne jest również zmieszczenie 4 słów macierzy wynikowej, jednak należy uwzględnić, że najmniejszą jednostką danych sprowadzanych do pamięci podręcznej jest linia (64B czyli 16 zmiennych typu float).\\
 \\
 Ostatecznie rozmiar instancji, dla której będzie zachowana lokalność czasowa dostępu do danych, można policzyć ze wzoru:
-\begin{equation}
-4 \cdot \left( n^2 + 4\cdot n + 4 \cdot 16 \right) < 6 \text{ MB}
+\begin{equation} \label{formula:lok_czas_3p}
+4\text{B} \cdot \left( n^2 + 4\cdot n + 4 \cdot 16 \right) < 6 \text{ MB}
 \end{equation}
 
 Uwzględniając pewien zapas daje to instancję o rozmiarze $n=1200$.\\
@@ -226,12 +246,12 @@ Uwzględniając pewien zapas daje to instancję o rozmiarze $n=1200$.\\
 
 W wersji 6 pętlowej algorytmu mnożenia macierzy (Listing \ref{lst:ijkiijjkk}) mamy do czynienia z podzieleniem całego zadania na etapy.Dzięki temu w danym czasie wielokrotnie korzystamy z mniejszej ilości danych (z każdej macierzy wykorzystujemy blok o wielkości $r \cdot r$ elementów). Umożliwia to zachowanie częściowej lokalności czasowej dostępu do danych (poszczególne bloki mogą być pobierane do pamięci podręcznej $n / r$ razy) dla większych instancji, dla których w przypadku poprzedniej metody konieczne byłoby pobieranie danych aż $n$ razy. Wartość $r$ musi być tak dobrana, aby iloraz $n/r$ był liczbą całkowitą. Ponieważ podział pracy następuje przed pierwszą pętlą, iloraz ten będzie również liczbą zadań do podziału między rdzeniami. Powinien być zatem liczbą podzielną przez 4 (liczba wykorzystywanych procesorów fizycznych) w celu zapewnienia zrównoważenia pracy systemu.\\
 \\
-Wielkość instancji zapewniającej częściową lokalność czasową można teoretycznie policzyć korzystając ze wzoru (TODO odnośnik do wzoru powyżej), zamiast $n$ podstawiając $r$. Wartość ta będzie poprawna przy założeniu, że rdzenie pracują z równą szybkością i w danych czasie mogą współdzielić ten sam wykorzystywany blok macierzy b. Jest to jednak założenie dość ryzykowne, więc do obliczenia przyjęto inny wzór: 
-\begin{equation}
-4 \cdot \left( 12r^2 \right) < 6 \text{ MB}
+Wielkość instancji zapewniającej częściową lokalność czasową można teoretycznie policzyć korzystając ze wzoru \ref{formula:lok_czas_3p}, zamiast $n$ podstawiając $r$. Wartość ta będzie poprawna przy założeniu, że rdzenie pracują z równą szybkością i w danych czasie mogą współdzielić ten sam wykorzystywany blok macierzy b. Jest to jednak założenie dość ryzykowne, więc do obliczenia przyjęto inny wzór: 
+\begin{equation} \label{formula:lok_czas_6p}
+4\text{B} \cdot \left( 12 \cdot r^2 \right) < 6 \text{ MB}
 \end{equation}
 
-Taki rozmiar powinien zapewnić, że dla każdego rdzenia możliwe jest przechowywanie w pamięci podręcznej wykorzystywanych przez niego aktualnie fragmentów (bloków r*r) wszystkich trzech macierzy. Daje to instancję testową o parametrach $n=1400$, $r=350$. Instancja ta zostanie również wykorzystana do testu metody 3 pętlowej, gdzie należy oczekiwać braku lokalności czasowej dostępu do danych, ponieważ wymagana pamięć podręczna musiałaby mieć pojemność ok. 7,5 MB.
+Taki rozmiar powinien zapewnić, że dla każdego rdzenia możliwe jest przechowywanie w pamięci podręcznej wykorzystywanych przez niego aktualnie fragmentów (bloków $r \cdot r$) wszystkich trzech macierzy. Daje to instancję testową o parametrach $n=1400$, $r=350$. Instancja ta zostanie również wykorzystana do testu metody 3 pętlowej, gdzie należy oczekiwać braku lokalności czasowej dostępu do danych, ponieważ wymagana pamięć podręczna musiałaby mieć pojemność ok. 7,5 MB.
 
 
 \subsection{Analiza lokalności przestrzennej}
@@ -254,23 +274,24 @@ Rozmiar instancji można wyznaczyć posługując się wzorem (uwzględniono moż
 
 Dodatkowo przyjmując pewien zapas dla innych procesów działających w systemie, daje to instancję o rozmiarze $n=700$, w przypadku której dane mogą być rozmieszczone na maksymalnie 483 stronach.\\
 \\
-W przypadku wersji 6 pętlowej określenie odpowiednich wartości n oraz r jest trudniejsze. Jeden blok o wielkości r*r może znajdować się na r stronach (np. przy n=1024, r=256 i odpowiednim wyrównaniu danych). W przypadku braku wyrównania, może to być już 2r stron lub więcej dla bardzo dużych instancji.\\
+W przypadku wersji 6 pętlowej określenie odpowiednich wartości n oraz r jest trudniejsze. Jeden blok o wielkości $r \cdot r$ może znajdować się na r stronach (np. przy n=1024, r=256 i odpowiednim wyrównaniu danych). W przypadku braku wyrównania, może to być już $2r$ stron lub więcej dla bardzo dużych instancji.\\
 \\
 Eksperyment zostanie zatem przeprowadzony dla instancji:
-\begin{enumerate}
-\item n=1400, r=350
-\item n=1400, r=175
+\setlist{nolistsep}
+\begin{enumerate}[noitemsep]
+\item $n=1400,~r=350$
+\item $n=1400,~r=175$
 \end{enumerate}
-
+~\\
 Obie instancje zapewniają równomierne rozłożenie pracy na wątki. Pierwsza instancja nie zapewni lokalnego przestrzennie dostępu do danych, ponieważ rozmiar macierzy będzie powodował takie ułożenie danych na stronach, że przynajmniej niektóre bloki będą wymagały 2r stron (czyli 700), co przy wielokrotnym wykorzystywaniu fragmentu macierzy B będzie skutkowało wielokrotnym zastępowaniem wpisów w TLB i koniecznością ponownego uzupełniania tych informacji. Druga instancja nawet przy pesymistycznym założeniu dotyczącym rozmieszczenia danych na stronach zapewni lokalność przestrzenną (adresy 350 stron dla fragmentu macierzy B oraz pojedynczych stron dla fragmentów macierzy A oraz C zmieszczą się w buforze).\\
 \\
 Dodatkowo sprawdzona zostanie efektywność przetwarzania dla instancji:
-\begin{enumerate}
-\item n=2800, r=350
-\item n=2800, r=700
+\begin{enumerate}[noitemsep]
+\item $n=2800,~r=350$
+\item $n=2800,~r=700$
 \end{enumerate}
 
-Pierwsza może charakteryzować się zbliżoną lokalnością czasową do instancji $n=1400$, $r=350$, choć w tym przypadku dane mogą być pobierane ośmiokrotnie ($n/r = 8$). W przypadku drugiej instancji lokalność czasowa wciąż może być zachowana. Chociaż nie jest spełniony warunek ze wzoru (TODO odnośnik), to przy optymistycznym założeniu, że rdzenie pracują z podobną prędkością, fragment macierzy B może być współdzielony, z macierzy A wystarczy teoretycznie zmieścić w pamięci podręcznej jeden wierz bloku r*r, a z macierzy wynikowej jedną linię zawierającą aktualnie obliczaną komórkę macierzy. Z drugiej strony, należy spodziewać się znaczącego wzrostu wskaźnika braków trafień do TLB, ponieważ, niezależnie od sposobu ułożenia danych na stronach, adresy stron zawierających fragment r*r macierzy B nie zmieszczą się w buforze TLB, co będzie powodować konieczność przeglądania tablicy stron przy każdym dostępie do danych tej macierzy, wewnątrz najbardziej wewnętrznej pętli.
+Pierwsza może charakteryzować się zbliżoną lokalnością czasową do instancji $n=1400$, $r=350$, choć w tym przypadku dane mogą być pobierane ośmiokrotnie ($n/r = 8$). W przypadku drugiej instancji lokalność czasowa wciąż może być zachowana. Chociaż nie jest spełniony warunek ze wzoru \ref{formula:lok_czas_6p}, to przy optymistycznym założeniu, że rdzenie pracują z podobną prędkością, fragment macierzy B może być współdzielony, z macierzy A wystarczy teoretycznie zmieścić w pamięci podręcznej jeden wierz bloku $r \cdot r$, a z macierzy wynikowej jedną linię zawierającą aktualnie obliczaną komórkę macierzy. Z drugiej strony, należy spodziewać się znaczącego wzrostu wskaźnika braków trafień do TLB, ponieważ, niezależnie od sposobu ułożenia danych na stronach, adresy stron zawierających fragment $r \cdot r$ macierzy B nie zmieszczą się w buforze TLB, co będzie powodować konieczność przeglądania tablicy stron przy każdym dostępie do danych tej macierzy, wewnątrz najbardziej wewnętrznej pętli.
 
 \section{Eksperyment pomiarowy}
 
@@ -312,145 +333,208 @@ n & r\\
 
 \subsection{Mierzone parametry}
 
-W trakcie eksperymentu zmierzono czas przetwarzania danej instancji odpowiednią metodą oraz czas przetwarzania tej samej instancji sekwencyjną metodą IKJ, w celu wyznaczenia wartości parametru przyspieszenia przetwarzania równoległego.\\
+W trakcie eksperymentu zmierzono czas przetwarzania (Tobl) danej instancji odpowiednią metodą oraz czas przetwarzania tej samej instancji sekwencyjną metodą IKJ, w celu wyznaczenia wartości parametru przyspieszenia przetwarzania równoległego.\\
 \\
-W celu obliczenia przedstawionych dalej miar efektywności dokonano pomiaru następujących zdarzeń w narzędziu do analizy wydajności AMD CodeXL:
+W celu obliczenia przedstawionych dalej miar efektywności dokonano pomiaru następujących zdarzeń w narzędziu do analizy wydajności AMD CodeXL (oznaczenia podane w nawiasach będą dalej wykorzystywane we wzorach):
 
 \begin{itemize}
-\item \textbf{CPU clocks not halted},
-\item \textbf{Retired instructions},
-\item \textbf{Data cache accesses},
-\item \textbf{L1 DTLB and L2 DTLB miss},
-\item \textbf{L3 miss}.
+\item \textbf{CPU clocks not halted} -- liczba cykli procesorów wykonujących kod (LCP),
+\item \textbf{Retired instructions} -- liczba wykonanych w trakcie przetwarzania instrukcji asemblerowych (LIA),
+\item \textbf{Data cache accesses} -- liczba dostępów do pamięci (LDP),
+\item \textbf{L1 DTLB and L2 DTLB miss} -- liczba braków  trafień do głównego bufora translacji,
+\item \textbf{L3 miss} -- liczba braków trafień do pamięci podręcznej L3 (BTL3).
 \end{itemize}
 
-Każdy kod został uruchomiony dwukrotnie, ponieważ jednocześnie, z odpowiednią dokładnością, można mierzyć tylko 4 zdarzenia. Progi zliczania zostały zapisane w załączonym pliku, zwykle były to wartości domyślne, jednak w niektórych przypadkach, przy bardzo małej wartości wartości progów zostały zmniejszone.
+Wartości (liczby przekroczeń progów danych zdarzeń) zostały zapisane dla operacji wykonującej mnożenie i zapisanie wyniku (linia 6  z listingu \ref{lst:ijk} oraz linia 9 z listingu \ref{lst:ijkiijjkk}). Operacje związane z pętlami sterującymi nie są brane pod uwagę. 
+\\
+\\
+Każdy kod został uruchomiony dwukrotnie, ponieważ jednocześnie, z odpowiednią dokładnością, można mierzyć tylko 4 zdarzenia. Progi zliczania zostały zapisane w załączonym pliku, zwykle były to wartości domyślne, jednak w niektórych przypadkach, gdy liczba przekroczeń progu była bardzo mała, wartości progów zostały zmniejszone w celu zapewnienia odpowiedniej dokładności.
 
 \subsection{Wyniki eksperymentu}
 
-todo, odwołanie do tabeli, podpisać je w arkuszu i tu używać tych oznaczeń
+Dane zebrane podczas eksperymentu zostały przedstawione w tabelach w załączonym arkuszu.\\
+\\
+W czasie eksperymentu nie przeprowadzono testu dla instancji, która charakteryzowałaby się brakiem lokalności czasowej dostępu do danych dla metody 6 pętlowej. Instancja ta musiała by mieć wielkość bloku $r=1400$, jednak już dla wartości $r=700$ czas obliczeń okazał się bardzo długi. Było to spowodowane bardzo niską efektywnością przetwarzania spowodowaną brakiem lokalności przestrzennej.
 
 \subsection{Wzory}
 
 Prędkość przetwarzania
 \begin{equation}
-\frac{Z}{Tobl} = \frac{2 \cdot n^3}{Tobl} \; \in \; \mathbb{R}_+
+PP = \frac{Z}{Tobl} = \frac{2 \cdot n^3}{Tobl} \; \in \; \mathbb{R}_+
 \end{equation}
 
 Liczba instrukcji na cykl procesora IPC1 dla procesora
 \begin{equation}
-\frac{LIA}{LCP} \; \in \; \mathbb{R}_+
+IPC1 = \frac{LIA}{LCP} \; \in \; \mathbb{R}_+
 \end{equation}
 
 Liczba instrukcji na cykl procesora IPCS dla systemu
 \begin{equation}
-\frac{LPF \cdot LIA}{LCP}
+IPCS = \frac{LPF \cdot LIA}{LCP}
 \; \in \; \mathbb{R}_+
 \end{equation}
 
-Wskaźnik braków trafień
+\begin{footnotesize}
+\begin{center}
+IPC można porównywać tylko w obrębie tej samej metody, ponieważ każda metoda może cechować się różną liczbą instrukcji o różnym stopniu skomplikowania
+\end{center}
+\end{footnotesize}
+
+Wskaźnik braków trafień do pamięci podręcznej L3
 \begin{equation}
-\frac{BTL3}{LIA}
+WBTL3 = \frac{BTL3}{LIA}
 \; \in \; \langle 0,1 \rangle
 \end{equation}
 
 Wskaźnik dostępu do danych
 \begin{equation}
-\frac{LDP}{LIA}
+WDD = \frac{LDP}{LIA}
 \; \in \; \langle 0,1 \rangle
 \end{equation}
 
+\begin{footnotesize}
+\begin{center}
+Wskaźnik ten jest cechą charakteryzującą kod, nie będzie zatem zależał od rozmiaru instancji 
+\end{center}
+\end{footnotesize}
+
+
 Wskaźnik braków trafień do głównego bufora translacji adresów danych
 \begin{equation}
-\frac{BTBT}{LIA}
+WBTBT = \frac{BTBT}{LDP}
 \; \in \; \langle 0,1 \rangle
 \end{equation}
 
 Krotność pobierania danych instancji do pamięci podręcznej
 \begin{equation}
-\frac{BTL3 \cdot dlpp}{wtz \cdot 3 \cdot n \cdot n}
+KPDI = \frac{BTL3 \cdot dlpp}{wtz \cdot 3 \cdot n \cdot n}
 \; \in \; \langle 1,16n \rangle
 \end{equation}
 \begin{footnotesize}
 \begin{center}
-W najlepszym przypadku każda linia pamięci zostanie pobrana dokładnie raz, stąd 1, natomiast w najgorszym przypadku w każdej iteracji algorytmu 3 pętlowego ($n^3$) wystąpi brak trafienia do wszystkich trzech macierzy, stąd $\frac{3n^3 \cdot 64B}{4B \cdot 3n^2} = 16n$
+W najlepszym przypadku każda linia pamięci zostanie pobrana dokładnie raz, stąd 1, natomiast w najgorszym przypadku w każdej iteracji algorytmu 3 pętlowego ($n^3$) wystąpi brak trafienia do wszystkich trzech macierzy, stąd $\dfrac{3n^3 \cdot 64\text{B}}{4\text{B} \cdot 3n^2} = 16n$
 \end{center}
 \end{footnotesize}
 
 Miara kosztu synchronizacji
 \begin{equation}
-\frac{CCP - CWP}{CCP} = \frac{LUPF \cdot Tobl - LCP \cdot Tclk}{LUPF \cdot Tobl}
+MKS = \frac{CCP - CWP}{CCP} = \frac{LUPF \cdot Tobl - LCP \cdot Tclk}{LUPF \cdot Tobl}
 \; \in \; \langle 0,1 \rangle
 \end{equation}
 
-Przyspieszenie przetwarzania równoległego  %TODO - co z polskimi literami?
+Przyspieszenie przetwarzania równoległego
 \begin{equation}
-Sp(równoległe\; A) = \frac{Tobl(obliczenia\; sekwencyjne\; IKJ)}{Tobl(obliczenia\; równoległe\; A)}
+Sp(\text{równoległe A}) = \frac{Tobl(\text{obliczenia sekwencyjne IKJ})}{Tobl(\text{obliczenia równoległe A})}
 \; \in \; \mathbb{R}_+
 \end{equation}
+\begin{footnotesize}
+\begin{center}
+W przypadku przetwarzania na procesorze wyposażonym w 4 rdzenie należy spodziewać się maksymalnej wartości przyspieszenia nie większej od 4
+\end{center}
+\end{footnotesize}
 
 
 \subsection{Obliczenia}
-todo: BINDy np. LIA - Ret inst
+
+\begin{table}[H]
+\centering
+\def\arraystretch{1.5}
+\begin{adjustbox}{width=1\textwidth}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+\hline
+N 	& PP {\small[GFLOPS]}	&	IPC1	&	IPCS	&	WBTL3	&	WDD	&	WBTBT	&	KPDI	&	MKS	&	Sp	\\ \hline
+700&6.27	&	2.51	&	10.02	&	5.43E-04	&	0.37	&	7.73E-05	&	16.33	&	0.16	&	1.57	\\ \hline
+1200&5.76	&	2.33	&	9.31	&	2.28E-03	&	0.37	&	3.21E-04	&	117.78	&	0.17	&	1.69	\\ \hline
+1400&4.75	&	1.97	&	7.88	&	1.50E-02	&	0.37	&	3.35E-04	&	904.08	&	0.19	&	2.08	\\ \hline
+\end{tabular}
+\end{adjustbox}
+\caption{Obliczone miary efektywności, metoda 3 pętlowa}
+\label{table:ijk}
+\end{table}
+
+
+\begin{table}[H]
+\centering
+\def\arraystretch{1.5}
+\begin{adjustbox}{width=1\textwidth}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+N	&R	&PP {\small[GFLOPS]}	&	IPC1	&	IPCS	&	WBTL3	&	WDD	&	WBTBT	&	KPDI	&	MKS	&	Sp	\\ \hline
+1400&175&4.04	&	1.34	&	5.35	&	8.62E-04	&	0.29	&	1.24E-04	&	46.12	&	0.10	&	1.77	\\ \hline
+1400&350&4.18	&	1.37	&	5.50	&	7.61E-04	&	0.29	&	1.90E-03	&	40.54	&	0.10	&	1.83	\\ \hline
+2800&350&3.91	&	1.30	&	5.18	&	7.12E-04	&	0.28	&	4.18E-03	&	60.17	&	0.29	&	1.70	\\ \hline
+2800&700&1.01	&	0.32	&	1.27	&	8.51E-04	&	0.29	&	2.57E-01	&	87.72	&	0.09	&	0.44	\\ \hline
+\end{tabular}
+\end{adjustbox}
+\caption{Obliczone miary efektywności, metoda 6 pętlowa}
+\label{table:ijkiijjkk}
+\end{table}
+
 
 \begin{figure}[H]
   \centering
-    \includegraphics[width=0.60\textwidth]{../Results/charts/GFLOPS.png}
+    \includegraphics[width=0.95\textwidth]{../Results/charts/GFLOPS.png}
     \caption{Wykres porównujący prędkość przetwarzania}
 \end{figure}
 
-\begin{figure}[H]
-  \centering
-    \includegraphics[width=0.60\textwidth]{../Results/charts/krotnosc.png}
-    \caption{Wykres porównujący krotność pobierania danych instancji do pamięci podręcznej}
-\end{figure}
-
 
 \begin{figure}[H]
   \centering
-    \includegraphics[width=0.60\textwidth]{../Results/charts/L3_miss.png}
-    \caption{Wykres porównujący wskaźnik braków trafień do pamięci podręcznej L3}
-\end{figure}
-
-
-\begin{figure}[H]
-  \centering
-    \includegraphics[width=0.60\textwidth]{../Results/charts/ppr.png}
+    \includegraphics[width=0.95\textwidth]{../Results/charts/ppr.png}
     \caption{Wykres porównujący przyspieszenie przetwarzania równoległego}
 \end{figure}
 
 
 \begin{figure}[H]
   \centering
-    \includegraphics[width=0.60\textwidth]{../Results/charts/TLB_miss.png}
-    \caption{Wykres porównujący wskaźnik braków trafień do bufora translacji}
+    \includegraphics[width=0.95\textwidth]{../Results/charts/krotnosc.png}
+    \caption{Wykres porównujący krotność pobierania danych instancji do pamięci podręcznej}
 \end{figure}
 
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.95\textwidth]{../Results/charts/L3_miss.png}
+    \caption{Wykres porównujący wskaźnik braków trafień do pamięci podręcznej L3}
+    \label{chart:L3_miss}
+\end{figure}
+
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.95\textwidth]{../Results/charts/TLB_miss.png}
+    \caption{Wykres porównujący wskaźnik braków trafień do bufora translacji}
+    \label{chart:TLB_miss}
+\end{figure}
+
+Na wykresach \ref{chart:L3_miss} oraz \ref{chart:TLB_miss} wykorzystano odwróconą skalę logarytmiczną, a zatem większa wysokość kolumny świadczy o mniejszej wartości wskaźnika.
+
 \section{Wnioski}
-{\huge TODO uwaga zmiana wzoru na wskaźniki TLB-miss-rate}\\
 
 \subsection{Metoda 3 pętlowa}
 
-Wielkości instancji charakterystycznych obliczone w czasie analizy warunków lokalności czasowej i przestrzennej dostępu do danych, zgodnie z oczekiwaniami cechują się różną prędkością przetwarzania. Największą wartość uzyskano dla instancji $n=700$, która cechuje się dwoma rodzajami lokalności  dostępu do danych. W przypadku instancji $n=1200$, dla której miała być zachowana tylko lokalność czasowa, prędkość przetwarzania jest zauważalnie niższa. Instancja $n=1400$ cechuje sie brakiem lokalności dostępu do danych, co skutkuje zdecydowanie wolniejszym przetwarzaniem.\\
+Wielkości instancji charakterystycznych obliczone w czasie analizy warunków lokalności czasowej i przestrzennej dostępu do danych, zgodnie z oczekiwaniami, cechują się różną prędkością przetwarzania. Największą wartość uzyskano dla instancji $n=700$, która cechuje się dwoma rodzajami lokalności  dostępu do danych. W przypadku instancji $n=1200$, dla której miała być zachowana tylko lokalność czasowa, prędkość przetwarzania jest zauważalnie niższa. Instancja $n=1400$ cechuje sie brakiem lokalności dostępu do danych, co skutkuje zdecydowanie wolniejszym przetwarzaniem.\\
 \\
-Pomiar wymienionych wcześniej zdarzeń pozwolił na wyznaczenie m. in. wskaźników braków trafień do pamięci podręcznej oraz do bufora translacji. Wskaźnik braków trafień do TLB jest o rząd wielkości mniejszy w przypadku instancji zapewniającej lokalność przestrzenną. Na liczbę trafień od bufora mają również wpływ inne działające procesy, jednak w przypadku instancji $n=700$ przewidziany został pewien zapas. Nie bez znaczenia jest również fakt, że macierze były najpierw inicjowane liczbami losowymi (macierze A i B), oraz zerami (macierz wynikowa). W związku z tym wiele adresów mogło być już obecnych w buforze, a zatem uzupełnianie nie było wcale wymagane. Bardzo niska wartość wskaźnika ma więc sens, można stwierdzić, że adresy stron wykorzystywanych wielokrotnie były prawie zawsze dostępne w buforze. W obu instancjach nie zapewniających lokalności przestrzennej wskaźnik braków trafień miał podobną, wyższą wartość, spowodowaną koniecznością uzupełniania adresów stron zawierających dane z macierzy B.\\
+Pomiar wymienionych wcześniej zdarzeń pozwolił na wyznaczenie m.in. wskaźników braków trafień do pamięci podręcznej oraz do bufora translacji. Wskaźnik braków trafień do TLB jest o rząd wielkości mniejszy w przypadku instancji zapewniającej lokalność przestrzenną. Na liczbę trafień do bufora mają również wpływ inne działające procesy, jednak w przypadku instancji $n=700$ przewidziany został pewien zapas. Nie bez znaczenia jest również fakt, że macierze były najpierw inicjowane liczbami losowymi (macierze A i B) oraz zerami (macierz wynikowa). W związku z tym wiele adresów mogło być już obecnych w buforze, a zatem uzupełnianie nie było wcale wymagane. Bardzo niska wartość wskaźnika ma więc sens, można stwierdzić, że adresy stron wykorzystywanych wielokrotnie były prawie zawsze dostępne w buforze. W obu instancjach nie zapewniających lokalności przestrzennej wskaźnik braków trafień miał podobną, wyższą wartość, spowodowaną koniecznością uzupełniania adresów stron zawierających dane z macierzy B.\\
 \\
-Analizując wskaźnik braków trafień do pamięci podręcznej, oraz wartość określającą ile razy dane instancji były pobierane (TODO odnośnik do tabeli) można zauważyć, że dla instancji mającej zapewniać lokalność czasową - $n=1200$ a nawet dla mniejszej instancji $n=700$, dane były pobierane z pamięci operacyjnej więcej niż raz. Jest to prawdopodobnie spowodowane działaniem w systemie innych procesów, co powodowało usuwanie z pamięci podręcznej niektórych rzadziej używanych w czasie obliczeń danych. Z kolei w przypadku instancji $n=1400$ łatwo dostrzec brak lokalności czasowej. Wskaźnik braków trafień jest o rząd wielkości wyższy niż w przypadku $n=1200$ a dane instancji były pobierane ponad 904 razy. Wzór odnosi się jednak do wielkości wszystkich macierzy, a sposób przeglądania macierzy A oraz B zapewnia lokalność dostępu, dlatego też można stwierdzić, że dane macierzy B były wielokrotnie zastępowane i ponownie sprowadzane do pamięci podręcznej.\\
+Analizując wskaźnik braków trafień do pamięci podręcznej oraz wartość określającą ile razy dane instancji były pobierane (Tablica \ref{table:ijk}), można zauważyć, że dla instancji mającej zapewniać lokalność czasową -- $n=1200$, a nawet dla mniejszej instancji -- $n=700$, dane były pobierane z pamięci operacyjnej więcej niż raz. Jest to prawdopodobnie spowodowane działaniem w systemie innych procesów, co powodowało usuwanie z pamięci podręcznej niektórych rzadziej używanych w czasie obliczeń danych. Z kolei w przypadku instancji $n=1400$ łatwo dostrzec brak lokalności czasowej. Wskaźnik braków trafień jest o rząd wielkości wyższy niż w przypadku $n=1200$, a dane instancji były pobierane ponad 904 razy. Wzór odnosi się jednak do wielkości wszystkich macierzy, a sposób przeglądania macierzy A oraz C zapewnia lokalność dostępu, dlatego też można stwierdzić, że dane macierzy B były wielokrotnie zastępowane i ponownie sprowadzane do pamięci podręcznej.\\
 \\
-Wartość przyspieszenia przetwarzania równoległego jest z kolei najwyższa dla instancji bez lokalności czasowej oraz przestrzennej ($n=1400$). Jest to jednak spowodowane tym, że metoda sekwencyjna IKJ, służąca jako odniesienie, charakteryzowała się znacząco niższą efektywnością przetwarzania dla tej instancji. Jest to spowodowane również częściowym brakiem lokalności dostępu do danych metody IKJ w przypadku tej instancji, co pokazują wyniki dodatkowego pomiaru zdarzeń w CodeXL dla metody sekwencyjnej (TODO odnośnik tabela).\\
+Wartość przyspieszenia przetwarzania równoległego jest z kolei najwyższa dla instancji bez lokalności czasowej oraz przestrzennej ($n=1400$). Jest to jednak spowodowane tym, że metoda sekwencyjna IKJ, służąca jako odniesienie, charakteryzowała się znacząco niższą efektywnością przetwarzania dla tej instancji. Jest to spowodowane również częściowym brakiem lokalności dostępu do danych metody IKJ w przypadku tej instancji.\\
 \\
 Miara IPC, określająca średnią liczbę instrukcji wykonywanych w cyklu zegarowym procesora, zgodnie z oczekiwaniami wskazuje na trend zgodny z prędkością przetwarzania.
 
 
 \subsection{Metoda 6 pętlowa}
 
-Wielkości wskaźników dotyczących lokalności czasowej dostępu do danych (TODO odnośnik do tabeli) pokazują, że wielkość macierzy nie większego znaczenia, ważny jest natomiast rozmiar bloku przetwarzanego w danym etapie. W przypadku instancji $n=1400$ nieco korzystniejsze dla efektywności przetwarzania wartości zaobserwowano dla instancji $r=350$. Nie jest to zaskakujący rezultat, ponieważ instancja $r=175$, mimo że może być mniej wrażliwa na czynniki zewnętrzne (zajmowanie części zasobów przez inne procesy) ponieważ posiada większy zapas, to podział pracy na 8 etapów powoduje, że dane bloki danych wykorzystywane ponownie w kolejnych etapach są sprowadzane 2 razy więcej razy. W przypadku instancji $n=2800$, $r=350$ wartość wskaźnika braków trafień do pamięci podręcznej zgodnie z oczekiwaniami jest zbliżoną do tej, która została uzyskana dla instancji $n=1400, r=350$. Zwiększyła się krotność pobierania danych instancji do pamięci podręcznej, ponieważ liczba etapów  przetwarzania wynosi 8. W przypadku instancji $n=2800, r=700$ lokalność czasowa dostępu do danych w trakcie poszczególnych etapów przetwarzania również została zachowana.\\
+Wielkości wskaźników dotyczących lokalności czasowej dostępu do danych (Tablica \ref{table:ijkiijjkk}) pokazują, że wielkość macierzy nie ma większego znaczenia, ważny jest natomiast rozmiar bloku przetwarzanego w danym etapie. W przypadku instancji $n=1400$ nieco korzystniejsze dla efektywności przetwarzania wartości zaobserwowano dla instancji $r=350$. Nie jest to zaskakujący rezultat, ponieważ instancja $r=175$, mimo że może być mniej wrażliwa na czynniki zewnętrzne (zajmowanie części zasobów przez inne procesy) ponieważ posiada większy zapas, to podział pracy na 8 etapów powoduje, że dane bloki danych wykorzystywane ponownie w kolejnych etapach są sprowadzane 2 razy więcej razy. W przypadku instancji $n=2800,~r=350$ wartość wskaźnika braków trafień do pamięci podręcznej zgodnie z oczekiwaniami jest zbliżona do tej, która została uzyskana dla instancji $n=1400,~r=350$. Zwiększyła się krotność pobierania danych instancji do pamięci podręcznej, ponieważ liczba etapów  przetwarzania wynosi 8. W przypadku instancji $n=2800,~r=700$ lokalność czasowa dostępu do danych w trakcie poszczególnych etapów przetwarzania również została zachowana.\\
 \\
 Znaczące różnice zaobserwowano natomiast w kwestii lokalności przestrzennej dostępu do danych. Zgodnie z oczekiwaniami, najlepszy wynik otrzymano dla instancji $n=1400, r=175$. Przy $r=350$ wskaźnik braków trafień do TLB miał wartość większą o jeden rząd wielkości. Pełna lokalność przestrzenna nie została zachowana, jednak wartość wskaźnika rzędu $10^{-3}$ nie powoduje jeszcze znaczącego spadku prędkości przetwarzania. Dla instancji $n=2800$ wskaźnik ten ma wartość ok. 2 razy większą niż dla $n=1400$. Jest to ponownie spowodowane podziałem pracy na 8 etapów (a nie 4), więc liczba koniecznych uzupełnień brakujących adresów wzrasta proporcjonalnie.
-Ostatnia instancja $n=2800, r=700$ charakteryzuje się, zgodnie z przewidywaniami, całkowitym brakiem lokalności przestrzennej. Wartość wskaźnika braków trafień do TLB wynosi około 25\%, co oznacza, że bufor translacji zawierał jedynie pary adresów potrzebne przy odczycie oraz modyfikacji aktualnie wykorzystywanych wartości w macierzy wynikowej, oraz przy odczycie danych z macierzy A. Przy próbie dostępu do danych z fragmentu macierzy B (zawsze kolejne komórki w ramach kolumny), zawsze następował brak trafienia do bufora translacji adresów.\\
+Ostatnia instancja $n=2800,~r=700$ charakteryzuje się, zgodnie z przewidywaniami, całkowitym brakiem lokalności przestrzennej. Wartość wskaźnika braków trafień do TLB wynosi około 25\%, co oznacza, że bufor translacji zawierał jedynie pary adresów potrzebne przy odczycie oraz modyfikacji aktualnie wykorzystywanych wartości w macierzy wynikowej, oraz przy odczycie danych z macierzy A. Przy próbie dostępu do danych z fragmentu macierzy B (zawsze kolejne komórki w ramach kolumny), zawsze następował brak trafienia do bufora translacji adresów.\\
 \\
-Powyższe fakty mają odzwierciedlenie w prędkości przetwarzania. Najgorszą wartość uzyskano dla instancji $n=2800, r=700$, natomiast pozostałe instancje cechowały się zbliżoną prędkością przetwarzania. Wartość wskaźnika IPC ponownie znajduje odzwierciedlenie w prędkości przetwarzania. W przypadku instancji analizowanych w tym punkcie algorytm sekwencyjny IKJ cechował się niemal stałą prędkością przetwarzania, a zatem można zaobserwować zgodne z oczekiwaniami przyspieszenie przetwarzania równoległego dla instancji cechujących się przynajmniej częściową lokalnością. W przypadku instancji $n=2800, r=700$ przetwarzanie równoległe odbywało się ponad 2 razy wolniej, niż w metodzie sekwencyjnej IKJ.\\
+Powyższe fakty mają odzwierciedlenie w prędkości przetwarzania. Najgorszą wartość uzyskano dla instancji $n=2800,~r=700$, natomiast pozostałe instancje cechowały się zbliżoną prędkością przetwarzania. Wartość wskaźnika IPC ponownie znajduje odzwierciedlenie w prędkości przetwarzania. W przypadku instancji analizowanych w tym punkcie algorytm sekwencyjny IKJ cechował się niemal stałą prędkością przetwarzania, a zatem można zaobserwować zgodne z oczekiwaniami przyspieszenie przetwarzania równoległego dla instancji cechujących się przynajmniej częściową lokalnością. W przypadku instancji $n=2800,~r=700$ przetwarzanie równoległe odbywało się ponad 2 razy wolniej niż w metodzie sekwencyjnej IKJ.\\
 \\
-Na podstawie analizy wyników obu metod można zatem wyciągnąć wniosek, że problem z lokalnym czasowo dostępem do danych powoduje spadek efektywności przetwarzania, jednak znacznie większe znaczenie ma brak lokalności przestrzennej.
+Na podstawie analizy wyników obu metod można zatem wyciągnąć wniosek, że problem z lokalnym czasowo dostępem do danych powoduje spadek efektywności przetwarzania, jednak znacznie większe znaczenie ma brak lokalności przestrzennej.\\
+\\
+Koszt synchronizacji powinien być podobny dla wszystkich instancji, ponieważ podział pracy następuje przed pierwszą pętlą i synchronizacja występuje tylko na końcu przetwarzania. Kod nie zawiera także dodatkowych dyrektyw wymuszających synchronizację w trackie przetwarzania. Co jednak zaskakujące, instancja $n=1400,~r=175$ cechuje się znacznie wyższym kosztem synchronizacji, mimo że podział pracy jest zrównoważony, a wykonywane obliczenia powinny przebiegać z podobną prędkością na każdym rdzeniu. Być może w trakcie przetwarzania tej instancji w systemie działał jeszcze inny proces, który obciążał stosunkowo mocno część rdzeni procesora.
 
 \end{document}
